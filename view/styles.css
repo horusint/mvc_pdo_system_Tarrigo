@@ -1,0 +1,147 @@
+body {
+    background-image: url('assets/fondo_web_unso.jpg') !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    margin: 0;
+    font-family: 'Helvetica LT Std', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+} 
+
+.logo {
+    display: flex;
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+.logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 11;
+}
+
+.content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.form-group {
+    display: flex;
+    width: 100%;
+}
+
+.content form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input::placeholder {
+    color: rgb(255, 255, 255);
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 350px;
+    height: 20px; 
+    background: rgba(255, 255, 255, 0.3); 
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    color: white; 
+    font-size: 16px;
+    text-align: left;
+    box-shadow: 0px 3px 6px #00000048;
+    transition: opacity 0.3s ease; 
+}
+
+.form-group,
+.btn-login,
+.btn-register,
+a {
+    margin-bottom: 10px; 
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    opacity: 1; 
+    outline: none; 
+}
+
+.btn-login,
+.btn-register {
+    width: 350px;
+    height: 20px; 
+    border-radius: 10px;
+    border: none; 
+    box-shadow: 0px 3px 6px #00000033;
+    text-align: center;
+    font: normal normal normal 16px/20px Helvetica LT Std;
+}
+
+a {
+    color: #002259; 
+    text-decoration: none; 
+}
+
+a.forgot-password {
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.btn-login {
+    width: 48%; 
+    width: 150px;
+    height: 40px;
+    background-color: #FFFFFF;
+    color: #002259;
+    border: none; 
+    box-shadow: 0px 3px 6px #00000033;
+    border-radius: 10px;
+    text-align: center;
+    font: normal normal normal 16px/20px Helvetica LT Std;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.btn-register {
+    width: 48%; 
+    width: 150px;
+    height: 40px;
+    background-color: #002259;
+    color: white;
+    display: flex;
+    text-align: center;
+    font: normal normal normal 16px/20px Helvetica LT Std;
+    justify-content: center;
+    align-items: center;
+}
