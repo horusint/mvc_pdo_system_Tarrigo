@@ -81,6 +81,12 @@ class Model {
     public function logAccess($userId) {
         $stmt = $this->pdo->prepare("INSERT INTO access_logs (user_id, access_time) VALUES (?, NOW())");
         $stmt->execute([$userId]);
+
+        $errores = $stmt->errorInfo();
+        if( !empty($errores) ){
+            echo '</br>Codigo de error PDO:'.implode(":",$this->pdo->errorInfo());
+        }
+
     }
     
     public function incrementFailedLogins($dniOrEmail) {
@@ -112,7 +118,7 @@ class Model {
     }
 
     public function buscar_logs($email) {
-      $stmt = $this->pdo->prepare("select access_logs.*, users.email as email from access_logs inner join users on users.id = access_logs.id where users.email = ?");
+      $stmt = $this->pdo->prepare("select access_logs.*, users.email as email from access_logs join users on (users.id = access_logs.user_id) where users.email = ?");
       $stmt->execute([$email]);
       $logs = $stmt->fetchAll();
       // var_dump($logs);
