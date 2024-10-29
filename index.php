@@ -1,10 +1,14 @@
 <?php
-// Iniciar sesión
 session_start();
+
+// Carga el archivo de seguridad, lo instancia y establece encabezados para iniciar una sesión segura
+require_once 'headers.php';  
+$security = new Security();
+$security->setSecurityHeaders();
+$security->secureSessionStart();
 
 require 'controller/controller.php';
 
 $controller = new Controller();   
-    // Manejar la solicitud y mostrar la vista correspondiente
-    $controller->handleRequest();
+$controller->handleRequest();
 ?>

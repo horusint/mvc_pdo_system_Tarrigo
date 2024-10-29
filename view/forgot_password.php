@@ -1,3 +1,13 @@
+<?php
+if (!isset($_SESSION)) {
+    session_start();
+}
+
+require_once 'controller/csrf_token.php';
+
+$csrf_token = (new csrf_check())->generate_csrf_token();
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,28 +16,25 @@
     <title>Recuperar Contraseña</title>
     <link rel="stylesheet" href="view/styles.css">
 </head>
-<body class="container my-4">
-    <h1 class="text-center mb-4">Recuperar Contraseña</h1>
-
-    <?php if (isset($error)): ?>
-        <div class="alert alert-danger"><?= $error ?></div>
-    <?php elseif (isset($success)): ?>
-        <div class="alert alert-success"><?= $success ?></div>
-    <?php endif; ?>
-
-    <form method="POST" action="?action=forgotPassword" class="row g-3">
-        <div class="col-md-12">
-            <label for="email" class="form-label">Email:</label>
-            <input type="email" class="form-control" id="email" name="email" required>
+<body>   
+    <div class="container">
+        <div class="logo">
+            <img src="view/assets/logo_unso.png" alt="Logo" width="400"> 
         </div>
-
-        <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary">Enviar enlace de recuperación</button>
+        <div class="content">
+            <form method="POST" action="?action=forgotPassword">
+                <div class="form-group">
+                    <input type="email" name="email" placeholder="Ingresa tu correo electrónico" required>
+                </div>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                <button type="submit" class="btn-recovery">Enviar mail de recuperación</button>
+                <?php if (isset($error)): ?>
+                    <div class="error-message"><?php echo $error; ?></div>
+                <?php endif; ?>
+            </form>
+            <a href="index.php" class="return-link">Regresar a la página principal</a>
         </div>
-
-        <div class="col-12 text-center">
-            <a href="index.php">Volver al inicio de sesión</a>
-        </div>
-    </form>
+    </div>
+    <script src="view/main.js" defer></script>
 </body>
 </html>

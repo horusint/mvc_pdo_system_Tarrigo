@@ -4,9 +4,9 @@ class Model {
 
     public function __construct() {
         $host = '127.0.0.1';
-        $db = 'seguridad_db';
+        $db = 'login_system';
         $user = 'root';
-        $pass = '';
+        $pass = 'root';
         $charset = 'utf8mb4';
 
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -23,54 +23,87 @@ class Model {
         }
     }
 
-    public function authenticateUser($email, $password) {
-        $stmt = $this->pdo->prepare('SELECT * FROM usuarios WHERE email = ?');
+    public function isEmailOrDniTaken($dni, $email) {
+        $stmt = $this->pdo->prepare("SELECT id FROM users WHERE dni = ? OR email = ?");
+        $stmt->execute([$dni, $email]);
+        return $stmt->fetch() !== false;
+    }
+    
+    public function checkEmailExists($email) {
+        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = ?');
         $stmt->execute([$email]);
-        $user = $stmt->fetch();
-
-        // Verificar si la contraseña es correcta
-        if ($user && password_verify($password, $user['password'])) {
-            return $user; // Devolver los datos del usuario
-        }
-
-        return false; // Usuario no autenticado
-    }
-
-    public function getUsers() {
-        // Modificar la consulta para incluir el nombre del rol usando JOIN
-        $stmt = $this->pdo->query('
-            SELECT usuarios.id, usuarios.nombre, usuarios.email, roles.rol_nombre 
-            FROM usuarios 
-            JOIN roles ON usuarios.rol_id = roles.id
-        ');
-        return $stmt->fetchAll();
-    }
-
-    public function createUser($nombre, $email, $password, $rol_id) {
-        $stmt = $this->pdo->prepare("INSERT INTO usuarios (nombre, email, password, rol_id) VALUES (?, ?, ?, ?)");
-        return $stmt->execute([$nombre, $email, password_hash($password, PASSWORD_BCRYPT), $rol_id]);
-    }
-
-    public function updateUser($id, $nuevoNombre, $email, $rol_id) {
-        $stmt = $this->pdo->prepare('UPDATE usuarios SET nombre = ?, email = ?, rol_id = ? WHERE id = ?');
-        return $stmt->execute([$nuevoNombre, $email, $rol_id, $id]);
-    }
-    
-
-    public function deleteUser($id) {
-        $stmt = $this->pdo->prepare('DELETE FROM usuarios WHERE id = ?');
-        return $stmt->execute([$id]);
-    }
-
-    public function getRoles() {
-        $stmt = $this->pdo->query('SELECT * FROM roles');
-        return $stmt->fetchAll();
-    }
-    
-    public function getUserById($id) {
-        $stmt = $this->pdo->prepare('SELECT * FROM usuarios WHERE id = ?');
-        $stmt->execute([$id]);
         return $stmt->fetch();
-    }    
+    }
+
+    public function createUser($dni, $nombre, $apellido, $fecha_nacimiento, $email, $password) {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO users (dni, nombre, apellido, fecha_nacimiento, email, password, role)
+            VALUES (?, ?, ?, ?, ?, ?, 'user')
+        ");
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        return $stmt->execute([$dni, $nombre, $apellido, $fecha_nacimiento, $email, $hashedPassword]);
+    }
+
+    public function login($dniOrEmail, $password) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE dni = ? OR email = ?");
+        $stmt->execute([$dniOrEmail, $dniOrEmail]);
+        $user = $stmt->fetch();
+    
+        if ($user && password_verify($password, $user['password']) && $user['locked'] == 0) {
+            // Inicio de sesión exitoso
+            $_SESSION['user'] = $user;
+            $this->logAccess($user['id']);
+            if ($user['role'] === 'admin') {
+                header('Location: view/admin_dashboard.php');
+            } else {
+                header('Location: view/user_dashboard.php');
+            }
+            exit();
+        } else {
+            // Inicio de sesión fallido
+            if ($user && $user['locked'] == 1) {
+                return 'Tu usuario se bloqueó, contacta al administrador';
+            } else {
+                $this->incrementFailedLogins($dniOrEmail);
+                $failedLogins = $this->getFailedLogins($dniOrEmail);
+                if ($failedLogins >= 3) {
+                    $this->blockUser($dniOrEmail);
+                    return 'Tu usuario se bloqueó, contacta al administrador';
+                } else {
+                    return 'Credenciales incorrectas';
+                }
+            }
+        }
+    }
+    
+    public function logAccess($userId) {
+        $stmt = $this->pdo->prepare("INSERT INTO access_logs (user_id, access_time) VALUES (?, NOW())");
+        $stmt->execute([$userId]);
+    }
+    
+    public function incrementFailedLogins($dniOrEmail) {
+        $stmt = $this->pdo->prepare("UPDATE users SET intentosfallidos = intentosfallidos + 1 WHERE dni = ? OR email = ?");
+        $stmt->execute([$dniOrEmail, $dniOrEmail]);
+    }
+    
+    public function getFailedLogins($dniOrEmail) {
+        $stmt = $this->pdo->prepare("SELECT intentosfallidos FROM users WHERE dni = ? OR email = ?");
+        $stmt->execute([$dniOrEmail, $dniOrEmail]);
+        $user = $stmt->fetch();
+        return $user['intentosfallidos'];
+    }
+    
+    public function blockUser($dniOrEmail) {
+        $stmt = $this->pdo->prepare("UPDATE users SET locked = 1 WHERE dni = ? OR email = ?");
+        $stmt->execute([$dniOrEmail, $dniOrEmail]);
+    }
+
+    public function buscar_logs($email) {
+      $stmt = $this->pdo->prepare("SELECT * FROM logs WHERE email = ?");
+      $stmt->execute([$email]);
+      $logs = $stmt->fetchAll();
+      var_dump($logs);
+      return $logs;
+    }
 }
 ?>

@@ -1,52 +1,27 @@
-CREATE DATABASE IF NOT EXISTS seguridad_db;
-USE seguridad_db;
+CREATE DATABASE IF NOT EXISTS login_system;
+USE login_system;
 
--- Crear tabla roles si no existe
-CREATE TABLE IF NOT EXISTS roles (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    rol_nombre VARCHAR(50) NOT NULL
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  dni VARCHAR(10) NOT NULL,
+  nombre VARCHAR(50) NOT NULL,
+  apellido VARCHAR(50) NOT NULL,
+  fecha_nacimiento DATE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+  locked TINYINT(1) DEFAULT 0,
+  intentosfallidos INT DEFAULT 0,
+  reset_token VARCHAR(255) DEFAULT NULL
 );
 
--- Insertar 3 registros en la tabla roles
-INSERT INTO roles (rol_nombre) VALUES 
-('Administrador'),
-('Usuario'),
-('Invitado');
-
--- Crear tabla usuarios si no existe
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    rol_id INT,
-    FOREIGN KEY (rol_id) REFERENCES roles(id)
+CREATE TABLE access_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  access_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Insertar 3 registros en la tabla usuarios
-INSERT INTO usuarios (nombre, email, password, rol_id) VALUES
-('Juan Pérez', 'juan.perez@example.com', '$2y$10$eXAMPLEHASHEDPASSWORD123', 1),
-('María López', 'maria.lopez@example.com', '$2y$10$eXAMPLEHASHEDPASSWORD456', 2),
-('Carlos Gómez', 'carlos.gomez@example.com', '$2y$10$eXAMPLEHASHEDPASSWORD789', 3);
-
--- Crear tabla logs si no existe
-CREATE TABLE IF NOT EXISTS logs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    descripcion TEXT,
-    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES usuarios(id)
-);
-
--- Insertar 10 registros en la tabla logs
-INSERT INTO logs (user_id, descripcion) VALUES
-(1, 'Inicio sesión'),
-(1, 'Cerró sesión'),
-(2, 'Intentó cambiar su contraseña'),
-(2, 'Cambió su rol a Administrador'),
-(3, 'Accedió como invitado'),
-(3, 'Cerró sesión como invitado'),
-(1, 'Actualizó información personal'),
-(2, 'Visualizó el panel de administración'),
-(3, 'Solicitó cambio de contraseña'),
-(1, 'Eliminó una cuenta de usuario');
+-- usuario de tipo admin para test. La contraseña es: Mano+1986
+INSERT INTO users (dni, nombre, apellido, fecha_nacimiento, email, password, role) 
+VALUES ('14276579', 'Diego', 'Maradona', '1960-10-30', 'maradona@dios.com', '$2y$10$jr3x7NnWFvtTj63Hah5WDO96gtnziX5mPPlipeaNOMkxVbVPQFc0m', 'admin');
